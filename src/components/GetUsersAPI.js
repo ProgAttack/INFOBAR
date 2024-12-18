@@ -4,7 +4,7 @@ import { ActivityIndicator } from "react-native"
 import { API_ENDPOINT } from "../config"
 
 export default props => {
-    const URL = API_ENDPOINT + 'Colaboradores'
+    const URL = API_ENDPOINT + 'Colaboradores/'
     const [userParam, setUserParam] = useState({})
     const {dispatch} = useContext(UserContext)
     const [dataLoaded, setDataLoaded] = useState(false)

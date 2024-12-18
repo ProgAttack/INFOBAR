@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList } from 'react-native';
-import Products from '../data/Products';
+
 import { Button, ListItem } from 'react-native-elements';
 import { StyleSheet } from 'react-native';
 

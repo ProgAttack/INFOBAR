@@ -1,10 +1,15 @@
 {
   "expo": {
-    "name": "projeto",
-    "slug": "projeto",
+    "name": "Front-infobar",
+    "slug": "Front-infobar",
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "7f56273b-4b2e-4563-9566-d7beee8c83f6"
+      }
+    }
   }
 }

@@ -1,75 +1,143 @@
-import React from 'react'
-import { View, Text, FlatList, Alert} from 'react-native'
-import Products from '../data/Products'
-import { Button, Icon, ListItem } from 'react-native-elements'
-import { StyleSheet } from 'react-native'
+import React, { useEffect, useState } from 'react';
+import { View, FlatList, Alert, RefreshControl, StyleSheet } from 'react-native';
+import { ListItem } from '@rneui/themed';
+import { API_ENDPOINT } from '../config';
 
+export default (props) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [dados, setDados] = useState([]);
 
+  const getProd = () => {
+    const URL = API_ENDPOINT + 'Produtos/';
 
+    const options = {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+    };
 
-export default props => {
+    fetch(URL, options)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('A solicitação falhou');
+        }
+        return response.json();
+      })
+      .then((dadosEnvio) => {
+        console.log('Resposta do servidor: ', dadosEnvio);
+        setDados(dadosEnvio);
+        getProd();
+      })
+      .catch((error) => {
+        console.error('Erro durante a solicitação:', error);
+      });
+  };
 
+  useEffect(() => {
+    getProd();
+  }, []);
 
-    function deletarProduto(produto) {
-        Alert.alert ('Excluir Produto', 'Deseja excluir o produto ? ', [
+  const deleteApi = async (produto) => {
+    const URL = API_ENDPOINT + 'Produtos/DeleteProd/' + produto.idProd;
+
+    const options = {
+      method: 'DELETE',
+    };
+
+    fetch(URL, options)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Erro na solicitação HTTP');
+        }
+        return response;
+      })
+      .then((responseData) => {
+        Alert.alert(
+          'Exclusão!',
+          'Produto excluído com sucesso!',
+          [
             {
-                text: "Sim",
-                onPress(){
-                    console.warn("Produto excluido")
-                }
+              text: 'Ok',
             },
-            {
-                text:"Não"
-            }
-        ]
-        )
-    }
+          ]
+        );
+        getProd();
+      })
+      .catch((error) => {
+        console.error('Erro: ', error);
+      });
+  };
 
+  function deletarProd(produto) {
+    Alert.alert('Excluir Produto', 'Deseja excluir o produto ? ', [
+      {
+        text: 'Sim',
+        onPress() {
+          deleteApi(produto);
+        },
+      },
+      {
+        text: 'Não',
+      },
+    ]);
+  }
 
-    function getProductsItem({item: produto}){
-        return(
-            <ListItem bottomDivider >
+  function getUserItem({ item: produto }) {
+    return (
+      <ListItem bottomDivider>
+        <ListItem.Content>
+          <ListItem.Title style={styles.titulo}>{produto.nomeProd}</ListItem.Title>
+          <ListItem.Subtitle style={styles.subt}>R$ {produto.preco}</ListItem.Subtitle>
+        </ListItem.Content>
+        <ListItem.Chevron
+          name="edit"
+          color="orange"
+          size={24}
+          onPress={() => props.navigation.navigate('ProductsForm', produto)}
+        />
+        <ListItem.Chevron
+          name="delete"
+          color="red"
+          size={24}
+          onPress={() => {
+            deletarProd(produto);
+          }}
+        />
+      </ListItem>
+    );
+  }
 
-                <ListItem.Content >
-                    <ListItem.Title style={styles.titulo}>{produto.prod_nome}</ListItem.Title>
-                    <ListItem.Subtitle style={styles.subt}>{produto.prod_valor}</ListItem.Subtitle>
-                </ListItem.Content>
-                <ListItem.Chevron 
-                    name="edit"
-                    color="orange"
-                    size={25}
-                    onPress={()=>props.navigation.navigate("ProductsForm", produto)}
-                />
-                <ListItem.Chevron 
-                    name="delete"
-                    color="red"
-                    size={25}
-                    onPress={()=> {deletarProduto(produto)}}
-                />
-            </ListItem>
-        )
+  const atualiza = () => {
+    setIsRefreshing(true);
+    getProd();
+    setIsRefreshing(false);
+  };
 
-    }
-    return(
-        <View>
-            <FlatList
-                keyExtractor={produto => produto.prod_id.toString()}
-                data={Products}
-                renderItem={getProductsItem}
-
-            />
-        </View>
-    )
-}
-
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={dados}
+        keyExtractor={(produto) => produto.idProd}
+        renderItem={getUserItem}
+        refreshControl={
+          <RefreshControl onRefresh={atualiza} refreshing={isRefreshing} />
+        }
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-    titulo:{
-        fontSize: 25,
-        fontWeight: 'bold'
+    container: {
+        flex: 1,
+        backgroundColor: '#192B4C',
     },
-    subt:{
-        fontSize: 25
-    }
-
-})
+  titulo: {
+    fontSize: 20,
+    
+  },
+  subt: {
+    fontSize: 20,
+  },
+});
