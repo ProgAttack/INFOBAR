@@ -9,6 +9,7 @@ const initialState = {
 const UserContext = createContext({
   state: initialState,
   dispatch: () => {},
+  
 });
 
 const actions = {
